@@ -116,21 +116,22 @@ exports.USER_LOGIN_API = async(ctx, next) => {
     // update
 exports.USER_UPDATA_PASSWORD_API = async(ctx, next) => {
         let Info = ctx.request.query
-        if (!Info.user || !Info.password || !Info.Oldpassword) {
+        if (!Info.user || !Info.password || !Info.passwordOld) {
             ctx.status = 200
             ctx.body = resObj(-1, '参数不全')
             return
         }
         let userObj = new Object()
         userObj.user = Info.user
-        userObj.password = Info.password
-        Info.password = Info.passwordOld
+        userObj.password = Info.passwordOld
         delete Info.passwordOld
         let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
         let logInfo = logObj(Info.user, userIp, "修改密码")
         try {
             var data = await UserModel.find(userObj).exec()
+            console.log(2222, data)
             if (data.length !== 0) {
+                console.log(333, Info)
                 await UserModel.findOneAndUpdate(userObj, Info).exec()
                     .then((data) => {
                         // 日志服务
