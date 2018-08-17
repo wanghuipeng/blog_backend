@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const secret = 'mynameisFantasyGao'; // 指定密钥，这是之后用来判断 token 合法性的标志
+const secret = 'mynameisWanghuipeng'; // 指定密钥，这是之后用来判断 token 合法性的标志
 
 const db = require('../db/model.js')
 const UserModel = db.userAPI
@@ -34,7 +34,7 @@ var logObj = (user, ip, msg) => {
      */
 exports.USER_REGISTER_API = async(ctx, next) => {
         var addInfo = ctx.request.query
-        if (!addInfo.user || !addInfo.password) {
+        if (!addInfo.user || !addInfo.password || !addInfo.avatar) {
             ctx.status = 200
             ctx.body = resObj(-1, '参数不全')
             return
@@ -50,7 +50,7 @@ exports.USER_REGISTER_API = async(ctx, next) => {
                         ctx.body = resObj(2, '用户名已存在')
                     } else {
                         addInfo.token = jwt.sign({
-                            user_id: addInfo.user,
+                            user_id: addInfo,
                         }, secret, {
                             expiresIn: '12h' //那么decode这个token的时候得到的过期时间为 : 创建token的时间 +　设置的值
                         })
@@ -116,22 +116,19 @@ exports.USER_LOGIN_API = async(ctx, next) => {
     // update
 exports.USER_UPDATA_PASSWORD_API = async(ctx, next) => {
         let Info = ctx.request.query
-        if (!Info.user || !Info.password || !Info.passwordOld) {
+        if (!Info.user || !Info.password || !Info.passwordOld || !Info.avatar) {
             ctx.status = 200
             ctx.body = resObj(-1, '参数不全')
             return
         }
-        let userObj = new Object()
+        let userObj = {}
         userObj.user = Info.user
         userObj.password = Info.passwordOld
-        delete Info.passwordOld
         let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
         let logInfo = logObj(Info.user, userIp, "修改密码")
         try {
             var data = await UserModel.find(userObj).exec()
-            console.log(2222, data)
             if (data.length !== 0) {
-                console.log(333, Info)
                 await UserModel.findOneAndUpdate(userObj, Info).exec()
                     .then((data) => {
                         // 日志服务
@@ -262,38 +259,61 @@ exports.EDIT_REMARK_API = async(ctx, next) => {
         ctx.body = resObj(0, '数据库错误', e.toString())
     }
 }
-const printUser = async(info) => {
-        let count = parseInt(info.pageNum ? info.pageNum : 0)
-            // 分页
-        let skipNum
-        if (info.pageNum && info.page) {
-            skipNum = (info.page - 1) * info.pageNum
-        }
-        // 排序
-        let sortWay
-        if (info.time) {
-            sortWay = { time: info.time }
-        } else {
-            sortWay = { time: -1 }
-        }
-        let searchInfo = {}
-        if (info.name) {
-            searchInfo.user = info.name
-        }
-        if (info.email) {
-            searchInfo.email = info.email
-        }
-        if (info.remark) {
-            searchInfo.remark = info.remark
-        }
-        let length = await UserModel.find(searchInfo).count()
-        let data = await UserModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
-        return {
-            length: length,
-            data: data
-        }
+
+// 用户信息（用户名，头像）
+exports.GET_USER_INFO_API = async(ctx, next) => {
+    try {
+        await UserModel.find({ token: ctx.header.authorization }).sort({ joinTime: -1 }).exec()
+            .then((data) => {
+                console.log(data)
+                let resData = {
+                    user: data[0].user,
+                    avatar: data[0].avatar
+                }
+                ctx.body = resObj(1, 'success', '', resData)
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e)
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
     }
-    // 格式化时间
+}
+const printUser = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+    let searchInfo = {}
+    if (info.name) {
+        searchInfo.user = info.name
+    }
+    if (info.email) {
+        searchInfo.email = info.email
+    }
+    if (info.remark) {
+        searchInfo.remark = info.remark
+    }
+    let length = await UserModel.find(searchInfo).count()
+    let data = await UserModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        data: data
+    }
+}
+
+
+// 格式化时间
 const FormatDate = (strTime, type) => {
     var date = new Date(strTime);
     if (type == 1) {

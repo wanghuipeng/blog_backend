@@ -795,7 +795,8 @@ exports.UPLOAD_IMAGE_API = async(ctx, next) => {
             let fileName = ctx.req.file.filename
             let resData = {}
             resData.fileName = fileName
-            resData.filePath = 'uploads/' + fileName
+            console.log(111111, process)
+            resData.filePath = 'http://127.0.0.1:3000/' + 'uploads/' + fileName
             ctx.body = resObj(1, '上传成功', resData)
         } catch (e) {
             ctx.body = resObj(0, '上传出错', e.toString())

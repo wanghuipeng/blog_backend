@@ -69,6 +69,7 @@ const updatePassword = userAPI.USER_UPDATA_PASSWORD_API
 const printUser = userAPI.USER_PRINT_API
 const deleteUser = userAPI.USER_DETELE_API
 const editRemark = userAPI.EDIT_REMARK_API
+const userInfo = userAPI.GET_USER_INFO_API
 
 // 用户日志
 const userLog = logAPI.LOGS_USER_API
@@ -108,8 +109,9 @@ router.get('/editReplyShow', checkToken, editReplyShow)
 router.get('/searchAllMarkers', checkToken, searchAllMarkers)
 router.post('/addAttentionUser', checkToken, addAttentionUser)
 router.get('/searchReplyers', checkToken, searchReplyers)
+router.get('/userInfo', checkToken, userInfo)
 
-router.post('/upload', upload.single('articleImage'), uploadImage)
+router.post('/upload', upload.single('avatar'), uploadImage)
 
 router.get('/getTopMarks', getTopMarks)
 router.get('/getTopRead', getTopRead)

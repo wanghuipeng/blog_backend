@@ -49,6 +49,7 @@ let siteReading = {
 let adminUser = {
     user: String,
     password: String,
+    avatar: String,
     token: String,
     remark: { type: String, default: '暂无' },
     joinTime: { type: Date, default: Date.now }
