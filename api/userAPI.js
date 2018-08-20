@@ -73,7 +73,6 @@ exports.USER_REGISTER_API = async(ctx, next) => {
     // login
 exports.USER_LOGIN_API = async(ctx, next) => {
         let Info = ctx.request.query
-        console.log(Info)
         if (!Info.user || !Info.password) {
             ctx.status = 200
             ctx.body = resObj(-1, '参数不全')

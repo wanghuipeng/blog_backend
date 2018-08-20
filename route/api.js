@@ -36,6 +36,7 @@ const upload = multer({ storage: storage, limits: limits });
 const add = articleAPI.ADD_ARTICLE_INFO_API
 const searchAll = articleAPI.SEARCH_ARTICLE_INFO_API
 const editArticle = articleAPI.EDIT_ARTICLE_INFO_API
+const detailArticle = articleAPI.DETAIL_ARTICLE_INFO_API
     // upload
 const uploadImage = articleAPI.UPLOAD_IMAGE_API
 
@@ -92,6 +93,7 @@ const indexPage = articleAPI.INDEX_PAGE_INFO_API
  */
 router.post('/addArticle', checkToken, add)
 router.post('/editArticle', checkToken, editArticle)
+router.get('/detailArticle', checkToken, detailArticle)
 router.get('/searchAll', checkToken, searchAll)
 router.get('/searchShowArt', checkToken, searchShowArt)
 router.get('/deleteReply', checkToken, deleteReply)

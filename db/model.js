@@ -3,38 +3,15 @@ const Schema = mongodb.Schema;
 
 // 文章项
 let articleItem = {
-    time: { type: Date, default: Date.now },
+    createTime: { type: Date, default: Date.now },
+    updateTime: { type: Date },
     title: String,
-    abstract: String,
+    type: String,
     author: String,
-    tag: [{
-        tagId: { type: Number, default: 0 },
-        tagName: String
-    }],
     content: String,
     markdown: String,
     imgUrl: { type: String },
-    classic: String,
-    show: { type: Number, default: 0 },
-    pv: { type: Number, default: 0 },
-    markNum: { type: Number, default: 0 },
-    markList: [{
-        userName: String,
-        userEmail: String,
-        markShow: { type: Number, default: 1 },
-        markTime: { type: Date, default: Date.now },
-        markContent: String,
-        likeNum: { type: Number, default: 0 },
-        like: [String],
-        replyList: [{
-            replyName: String,
-            replyEmail: String,
-            replyShow: { type: Number, default: 1 },
-            replyedUser: String,
-            replyTime: { type: Date, default: Date.now },
-            replyContent: String
-        }]
-    }]
+    pv: { type: Number, default: 0 }
 };
 // 分析数据
 let siteReading = {

@@ -3,6 +3,7 @@ const ArticleModel = db.articleAPI
 const ConcernedModel = db.concernedAPI
 const siteReadingModel = db.siteReadingAPI
 const mongoose = require('mongoose')
+const lodash = require('lodash')
 const fs = require('fs')
 
 
@@ -27,18 +28,45 @@ var resObj = (code, msg, data) => {
  */
 // add
 exports.ADD_ARTICLE_INFO_API = async(ctx, next) => {
+        let Info = ctx.request.body
+        if (!Info.type || !Info.title || !Info.content) {
+            ctx.status = 200
+            ctx.body = resObj(-1, '参数不全')
+            return
+        }
         try {
-            let addInfo = ctx.request.body
+            let addInfo = lodash.merge(ctx.request.body, { updateTime: null })
             addData = new ArticleModel(addInfo)
             var data = await addData.save()
             ctx.body = resObj(1, '保存成功', data)
         } catch (e) {
             ctx.body = resObj(0, '保存出错', e.toString())
         }
+
+    }
+    // detail
+exports.DETAIL_ARTICLE_INFO_API = async(ctx, next) => {
+        let getParams = ctx.request.query
+        if (!getParams.id) {
+            ctx.status = 200
+            ctx.body = resObj(-1, '参数不全')
+            return
+        }
+        try {
+            let data = await ArticleModel.findByIdAndUpdate(getParams.id).exec()
+            if (data) {
+                ctx.body = resObj(1, '成功', data)
+            } else {
+                ctx.body = resObj(2, '文章不存在')
+            }
+        } catch (e) {
+            ctx.body = resObj(0, '出错了', e.toString())
+        }
     }
     // EDIT
 exports.EDIT_ARTICLE_INFO_API = async(ctx, next) => {
-        let addInfo = ctx.request.body
+        let now = new Date()
+        let addInfo = lodash.merge(ctx.request.body, { updateTime: now })
         let Info = ctx.request.body.id
         try {
             let data = await ArticleModel.findByIdAndUpdate(Info, addInfo).exec()
@@ -77,17 +105,11 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
                 let obj = {}
                 obj.id = item._id
                 obj.title = item.title
-                obj.time = FormatDate(item.time, 1)
+                obj.createTime = item.createTime === null ? null : FormatDate(item.createTime, 1)
+                obj.updateTime = item.updateTime === null ? null : FormatDate(item.updateTime, 1)
                 obj.author = item.author
-                obj.imageUrl = item.imageUrl
-                obj.classic = item.classic
-                obj.show = item.show
+                obj.type = item.type
                 obj.pv = item.pv
-                obj.markNum = item.markNum
-                obj.tags = ''
-                item.tag.forEach((tagItem, j) => {
-                    obj.tags = obj.tags + tagItem.tagName
-                })
                 resData.push(obj)
             })
             result.count = data.length
@@ -687,7 +709,6 @@ exports.EDIT_SHOW_INFO_API = async(ctx, next) => {
     }
     // index_page
 exports.INDEX_PAGE_INFO_API = async(ctx, next) => {
-        console.log('---------------------------------')
         let getParams = ctx.request.query
         try {
             let data = await searchArticleForUser(getParams)
@@ -927,31 +948,15 @@ const searchArticle = async(info) => {
         sortWay = { time: info.time }
     } else if (info.pv) {
         sortWay = { pv: info.pv }
-    } else if (info.markNum) {
-        sortWay = { markNum: info.markNum }
     } else {
         sortWay = { time: -1 }
     }
     let searchInfo = {}
-    if (info.tag) {
-        searchInfo['tag.tagName'] = { $in: info.tag }
-    }
     if (info.author) {
         searchInfo.author = info.author
     }
     if (info.title) {
         searchInfo.title = info.title
-    }
-    if (info.classic) {
-        searchInfo.classic = info.classic
-    }
-    if (info.show) {
-        if (info.show == '已发表') {
-            searchInfo.show = 1
-        }
-        if (info.show == '撰写中') {
-            searchInfo.show = 0
-        }
     }
     let length = await ArticleModel.find(searchInfo).count()
     let data = await ArticleModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
