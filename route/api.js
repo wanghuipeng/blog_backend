@@ -87,6 +87,7 @@ const addMark = articleAPI.ADD_MARK_INFO_API
 const addReply = articleAPI.ADD_REPLY_INFO_API
 const addLike = articleAPI.ADD_LIKE_INFO_API
 const indexPage = articleAPI.INDEX_PAGE_INFO_API
+const allBlogs = articleAPI.ALL_BLOGS_INFO_API
 
 /**
  *  admin
@@ -141,5 +142,7 @@ router.get('/searchTag', searchTag)
 router.post('/addMark', addMark)
 router.post('/addReply', addReply)
 router.get('/addLike', addLike)
+router.get('/allBlogs', allBlogs)
+router.get('/detailBlog', detailArticle)
 
 module.exports = router

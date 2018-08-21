@@ -53,7 +53,22 @@ exports.DETAIL_ARTICLE_INFO_API = async(ctx, next) => {
             return
         }
         try {
-            let data = await ArticleModel.findByIdAndUpdate(getParams.id).exec()
+            let dataArr = [await ArticleModel.findByIdAndUpdate(getParams.id).exec()]
+            let resData = []
+            dataArr.forEach((item, i) => {
+                let obj = {}
+                obj.id = item._id
+                obj.title = item.title
+                obj.createTime = item.createTime === null ? null : FormatDate(item.createTime, 1)
+                obj.updateTime = item.updateTime === null ? null : FormatDate(item.updateTime, 1)
+                obj.author = item.author
+                obj.avatar = item.avatar
+                obj.type = item.type
+                obj.content = item.content
+                obj.pv = item.pv
+                resData.push(obj)
+            })
+            let data = resData[0]
             if (data) {
                 ctx.body = resObj(1, '成功', data)
             } else {
@@ -721,6 +736,32 @@ exports.INDEX_PAGE_INFO_API = async(ctx, next) => {
             ctx.body = resObj(0, '查询出错', e.toString())
         }
     }
+    // allBlogs
+exports.ALL_BLOGS_INFO_API = async(ctx, next) => {
+        let getParams = ctx.request.query
+        try {
+            let data = await searchBlog(getParams)
+            let result = {}
+            let resData = []
+            data.data.forEach((item, i) => {
+                let obj = {}
+                obj.id = item._id
+                obj.type = item.type
+                obj.title = item.title
+                obj.author = item.author
+                obj.content = item.content
+                obj.updateTime = item.updateTime === null ? null : FormatDate(item.updateTime, 1)
+                obj.createTime = item.createTime === null ? null : FormatDate(item.createTime, 1)
+                obj.pv = item.pv
+                resData.push(obj)
+            })
+            result.count = data.length
+            result.list = resData
+            ctx.body = resObj(1, '查询成功', result)
+        } catch (e) {
+            ctx.body = resObj(0, '查询出错', e.toString())
+        }
+    }
     // search_class
 exports.SEARCH_CLASS_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
@@ -936,6 +977,37 @@ exports.GET_CHART_DATA_INFO = async(ctx, next) => {
 
 // search_article_list_info
 const searchArticle = async(info) => {
+        let count = parseInt(info.pageNum ? info.pageNum : 0)
+            // 分页
+        let skipNum
+        if (info.pageNum && info.page) {
+            skipNum = (info.page - 1) * info.pageNum
+        }
+        // 排序
+        let sortWay
+        if (info.time) {
+            sortWay = { time: info.time }
+        } else if (info.pv) {
+            sortWay = { pv: info.pv }
+        } else {
+            sortWay = { time: -1 }
+        }
+        let searchInfo = {}
+        if (info.author) {
+            searchInfo.author = info.author
+        }
+        if (info.title) {
+            searchInfo.title = info.title
+        }
+        let length = await ArticleModel.find(searchInfo).count()
+        let data = await ArticleModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
+        return {
+            length: length,
+            data: data
+        }
+    }
+    // C端
+const searchBlog = async(info) => {
     let count = parseInt(info.pageNum ? info.pageNum : 0)
         // 分页
     let skipNum
@@ -957,6 +1029,9 @@ const searchArticle = async(info) => {
     }
     if (info.title) {
         searchInfo.title = info.title
+    }
+    if (info.type) {
+        searchInfo.type = info.type
     }
     let length = await ArticleModel.find(searchInfo).count()
     let data = await ArticleModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()

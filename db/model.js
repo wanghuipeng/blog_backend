@@ -8,6 +8,7 @@ let articleItem = {
     title: String,
     type: String,
     author: String,
+    avatar: String,
     content: String,
     markdown: String,
     imgUrl: { type: String },
