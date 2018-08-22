@@ -26,6 +26,7 @@
     "koa2-cors": "^2.0.6",
     "lodash": "^4.17.10",
     "mongoose": "^4.11.7",
-    "opener": "^1.4.3"
+    "opener": "^1.4.3",
+    "puppeteer": "^1.7.0"
   }
 }

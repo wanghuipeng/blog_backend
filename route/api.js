@@ -11,7 +11,7 @@ const checkToken = require('./auth.js');
 const articleAPI = require('../api/articleAPI.js')
 const userAPI = require('../api/userAPI.js')
 const logAPI = require('../api/logAPI.js')
-
+const sdAPI = require('../api/sdAPI.js')
 
 //上传配置  
 const storage = multer.diskStorage({
@@ -91,9 +91,11 @@ const allBlogs = articleAPI.ALL_BLOGS_INFO_API
 const detailBlog = articleAPI.DETAIL_BLOG_INFO_API
 const carousel = articleAPI.CAROUSEL_BLOG_INFO_API
 
-/**
- *  admin
- */
+// 爬虫
+const sdBlogs = sdAPI.SD_BLOGS_INFO_API
+    /**
+     *  admin
+     */
 router.post('/addArticle', checkToken, add)
 router.post('/editArticle', checkToken, editArticle)
 router.get('/detailArticle', checkToken, detailArticle)
@@ -147,5 +149,10 @@ router.get('/addLike', addLike)
 router.get('/allBlogs', allBlogs)
 router.get('/detailBlog', detailBlog)
 router.get('/carousel', carousel)
+
+/**
+ *  爬虫
+ */
+router.get('/sdBlogs', sdBlogs)
 
 module.exports = router
