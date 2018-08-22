@@ -12,7 +12,8 @@ let articleItem = {
     content: String,
     markdown: String,
     imgUrl: { type: String },
-    pv: { type: Number, default: 0 }
+    pv: { type: Number, default: 0 },
+    thumbnail: String
 };
 // 分析数据
 let siteReading = {

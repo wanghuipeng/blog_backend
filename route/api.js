@@ -88,6 +88,8 @@ const addReply = articleAPI.ADD_REPLY_INFO_API
 const addLike = articleAPI.ADD_LIKE_INFO_API
 const indexPage = articleAPI.INDEX_PAGE_INFO_API
 const allBlogs = articleAPI.ALL_BLOGS_INFO_API
+const detailBlog = articleAPI.DETAIL_BLOG_INFO_API
+const carousel = articleAPI.CAROUSEL_BLOG_INFO_API
 
 /**
  *  admin
@@ -143,6 +145,7 @@ router.post('/addMark', addMark)
 router.post('/addReply', addReply)
 router.get('/addLike', addLike)
 router.get('/allBlogs', allBlogs)
-router.get('/detailBlog', detailArticle)
+router.get('/detailBlog', detailBlog)
+router.get('/carousel', carousel)
 
 module.exports = router

@@ -66,6 +66,7 @@ exports.DETAIL_ARTICLE_INFO_API = async(ctx, next) => {
                 obj.type = item.type
                 obj.content = item.content
                 obj.pv = item.pv
+                obj.thumbnail = item.thumbnail
                 resData.push(obj)
             })
             let data = resData[0]
@@ -74,6 +75,45 @@ exports.DETAIL_ARTICLE_INFO_API = async(ctx, next) => {
             } else {
                 ctx.body = resObj(2, '文章不存在')
             }
+        } catch (e) {
+            ctx.body = resObj(0, '出错了', e.toString())
+        }
+    }
+    // detailBlog
+exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
+        let getParams = ctx.request.query
+        if (!getParams.id) {
+            ctx.status = 200
+            ctx.body = resObj(-1, '参数不全')
+            return
+        }
+        try {
+            await ArticleModel.findById(getParams.id).exec().then(temp => {
+                let pv = temp.pv
+                ArticleModel.findByIdAndUpdate(getParams.id, { pv: pv + 1 }).exec()
+                let dataArr = [temp]
+                let resData = []
+                dataArr.forEach((item, i) => {
+                    let obj = {}
+                    obj.id = item._id
+                    obj.title = item.title
+                    obj.createTime = item.createTime === null ? null : FormatDate(item.createTime, 1)
+                    obj.updateTime = item.updateTime === null ? null : FormatDate(item.updateTime, 1)
+                    obj.author = item.author
+                    obj.avatar = item.avatar
+                    obj.type = item.type
+                    obj.content = item.content
+                    obj.pv = item.pv
+                    resData.push(obj)
+                })
+                let data = resData[0]
+                if (data) {
+                    ctx.body = resObj(1, '成功', data)
+                } else {
+                    ctx.body = resObj(2, '文章不存在')
+                }
+            })
+
         } catch (e) {
             ctx.body = resObj(0, '出错了', e.toString())
         }
@@ -125,6 +165,7 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
                 obj.author = item.author
                 obj.type = item.type
                 obj.pv = item.pv
+                obj.thumbnail = item.thumbnail
                 resData.push(obj)
             })
             result.count = data.length
@@ -134,7 +175,29 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
             ctx.body = resObj(0, '查询出错', e.toString())
         }
     }
-    // search_marks
+    // carousel
+exports.CAROUSEL_BLOG_INFO_API = async(ctx, next) => {
+    try {
+        let data = await searchPopular()
+        let result = {}
+        let resData = []
+        data.data.forEach((item, i) => {
+            let obj = {}
+            obj.id = item._id
+            obj.type = item.type
+            obj.title = item.title
+            obj.thumbnail = item.thumbnail
+            resData.push(obj)
+        })
+        result.count = data.length
+        result.list = resData
+        ctx.body = resObj(1, '查询成功', result)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
+
+// search_marks
 exports.SEARCH_MARKS_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
         try {
@@ -753,6 +816,7 @@ exports.ALL_BLOGS_INFO_API = async(ctx, next) => {
                 obj.updateTime = item.updateTime === null ? null : FormatDate(item.updateTime, 1)
                 obj.createTime = item.createTime === null ? null : FormatDate(item.createTime, 1)
                 obj.pv = item.pv
+                obj.thumbnail = item.thumbnail
                 resData.push(obj)
             })
             result.count = data.length
@@ -1037,6 +1101,14 @@ const searchBlog = async(info) => {
     let data = await ArticleModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
     return {
         length: length,
+        data: data
+    }
+}
+const searchPopular = async(info) => {
+    // 排序
+    sortWay = { pv: -1 }
+    let data = await ArticleModel.find().limit(4).sort(sortWay).exec()
+    return {
         data: data
     }
 }
