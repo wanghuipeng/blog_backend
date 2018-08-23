@@ -50,36 +50,68 @@ let concernedUser = {
     nearTime: String
 };
 
-// 爬虫文章（来自segmentDefault）
-let sdItem = {
+/**
+ *  爬虫 (来自segmentDefault)
+ */
+//前端
+let frontEndItem = {
     sd_id: Number,
     sd_title: String,
     sd_content: String,
+    sd_link: String,
+    sd_thumbnail: String,
+    sd_img: String,
+    sd_zan: Number,
     sd_author: String,
-    sd_avatar: String,
-    sd_text: String,
-    sd_station: String,
-    sd_collect: Number,
-    sd_zan: Number
+    sd_time: String
 };
-
+//后端
+let backEndItem = {
+    sd_id: Number,
+    sd_title: String,
+    sd_content: String,
+    sd_link: String,
+    sd_thumbnail: String,
+    sd_img: String,
+    sd_zan: Number,
+    sd_author: String,
+    sd_time: String
+};
+//区块链
+let chainItem = {
+    sd_id: Number,
+    sd_title: String,
+    sd_content: String,
+    sd_link: String,
+    sd_thumbnail: String,
+    sd_img: String,
+    sd_zan: Number,
+    sd_author: String,
+    sd_time: String
+};
 let articleSchema = new Schema(articleItem);
 let userSchema = new Schema(adminUser);
 let logSchema = new Schema(loginLogs);
 let concernedSchema = new Schema(concernedUser);
 let siteReadingSchema = new Schema(siteReading);
-let sdItemSchema = new Schema(sdItem);
+let frontEndItemSchema = new Schema(frontEndItem);
+let backEndItemSchema = new Schema(backEndItem);
+let chainItemSchema = new Schema(chainItem);
 
 let articleModel = mongodb.model("articleModel", articleSchema);
 let userModel = mongodb.model("userModel", userSchema);
 let logModel = mongodb.model("logModel", logSchema);
 let concernedModel = mongodb.model("concernedModel", concernedSchema);
 let siteReadingModel = mongodb.model("siteReadingModel", siteReadingSchema);
-let sdItemModel = mongodb.model("sdItemModel", sdItemSchema);
+let frontEndItemModel = mongodb.model("frontEndItemModel", frontEndItemSchema);
+let backEndItemModel = mongodb.model("backEndItemModel", backEndItemSchema);
+let chainItemModel = mongodb.model("chainItemModel", chainItemSchema);
 
 exports.articleAPI = articleModel;
 exports.userAPI = userModel;
 exports.logAPI = logModel;
 exports.concernedAPI = concernedModel;
 exports.siteReadingAPI = siteReadingModel;
-exports.sdItemAPI = sdItemModel;
+exports.frontEndItemAPI = frontEndItemModel;
+exports.backEndItemAPI = backEndItemModel;
+exports.chainItemAPI = chainItemModel;

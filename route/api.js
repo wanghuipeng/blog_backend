@@ -11,7 +11,9 @@ const checkToken = require('./auth.js');
 const articleAPI = require('../api/articleAPI.js')
 const userAPI = require('../api/userAPI.js')
 const logAPI = require('../api/logAPI.js')
-const sdAPI = require('../api/sdAPI.js')
+const frontEndAPI = require('../api/frontEndAPI.js')
+const backEndAPI = require('../api/backEndAPI.js')
+const chainAPI = require('../api/chainAPI.js')
 
 //上传配置  
 const storage = multer.diskStorage({
@@ -91,8 +93,17 @@ const allBlogs = articleAPI.ALL_BLOGS_INFO_API
 const detailBlog = articleAPI.DETAIL_BLOG_INFO_API
 const carousel = articleAPI.CAROUSEL_BLOG_INFO_API
 
-// 爬虫
-const sdBlogs = sdAPI.SD_BLOGS_INFO_API
+/**
+ *  爬虫（来自segmentDefault）
+ */
+// 前端
+const frontEndBlog = frontEndAPI.FRONTEND_INFO_API
+
+// 后端
+const backEndBlog = backEndAPI.BACKEND_INFO_API
+
+// 区块链
+const chainBlog = chainAPI.CHAIN_INFO_API
     /**
      *  admin
      */
@@ -153,6 +164,8 @@ router.get('/carousel', carousel)
 /**
  *  爬虫
  */
-router.get('/sdBlogs', sdBlogs)
+router.get('/frontEndBlog', frontEndBlog)
+router.get('/backEndBlog', backEndBlog)
+router.get('/chainBlog', chainBlog)
 
 module.exports = router

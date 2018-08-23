@@ -27,6 +27,7 @@
     "lodash": "^4.17.10",
     "mongoose": "^4.11.7",
     "opener": "^1.4.3",
-    "puppeteer": "^1.7.0"
+    "puppeteer": "^1.7.0",
+    "request": "^2.88.0"
   }
 }
