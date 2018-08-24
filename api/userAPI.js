@@ -3,6 +3,7 @@ const secret = 'mynameisWanghuipeng'; // 指定密钥，这是之后用来判断
 
 const db = require('../db/model.js')
 const UserModel = db.userAPI
+const CUserModel = db.cUserAPI
 const LogModel = db.logAPI
 const concernedUser = db.concernedAPI
 
@@ -32,6 +33,47 @@ var logObj = (user, ip, msg) => {
     /**
      *  用户信息  
      */
+
+// C端注册
+exports.REGISTC_INFO_API = async(ctx, next) => {
+    var addInfo = ctx.request.body
+    if (!addInfo.name || !addInfo.account || !addInfo.password) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '参数不全')
+        return
+    }
+    let userObj = {}
+    userObj.name = addInfo.name
+    let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
+    let logInfo = logObj(addInfo.name, userIp, "注册账号")
+    try {
+        await UserModel.find(userObj).exec()
+            .then((data) => {
+                if (data.length !== 0) {
+                    ctx.body = resObj(2, '用户名已存在')
+                } else {
+                    addInfo.token = jwt.sign({
+                        user_id: addInfo,
+                    }, secret, {
+                        expiresIn: '12h' //那么decode这个token的时候得到的过期时间为 : 创建token的时间 +　设置的值
+                    })
+                    let addUser = new CUserModel(addInfo)
+                    addUser.save()
+                        // 日志服务
+                    let logRegister = new LogModel(logInfo)
+                    logRegister.save()
+                    ctx.status = 200
+                    ctx.body = resObj(1, '注册成功')
+                }
+            })
+            .catch((e) => {
+                ctx.body = resObj(0, '发生错误', e.toString())
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
 exports.USER_REGISTER_API = async(ctx, next) => {
         var addInfo = ctx.request.query
         if (!addInfo.user || !addInfo.password || !addInfo.avatar) {

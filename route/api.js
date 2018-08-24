@@ -14,6 +14,7 @@ const logAPI = require('../api/logAPI.js')
 const frontEndAPI = require('../api/frontEndAPI.js')
 const backEndAPI = require('../api/backEndAPI.js')
 const chainAPI = require('../api/chainAPI.js')
+const actAPI = require('../api/actAPI.js')
 
 //上传配置  
 const storage = multer.diskStorage({
@@ -92,11 +93,12 @@ const indexPage = articleAPI.INDEX_PAGE_INFO_API
 const allBlogs = articleAPI.ALL_BLOGS_INFO_API
 const detailBlog = articleAPI.DETAIL_BLOG_INFO_API
 const carousel = articleAPI.CAROUSEL_BLOG_INFO_API
-
-/**
- *  爬虫（来自segmentDefault）
- */
-// 前端
+const searchKeyword = articleAPI.SEARCH_KEYWORD_INFO_API
+const registC = userAPI.REGISTC_INFO_API
+    /**
+     *  爬虫（来自segmentDefault）
+     */
+    // 前端
 const frontEndBlog = frontEndAPI.FRONTEND_INFO_API
 
 // 后端
@@ -104,6 +106,9 @@ const backEndBlog = backEndAPI.BACKEND_INFO_API
 
 // 区块链
 const chainBlog = chainAPI.CHAIN_INFO_API
+
+// 活动推荐
+const activities = actAPI.ACT_INFO_API
     /**
      *  admin
      */
@@ -113,7 +118,7 @@ router.get('/detailArticle', checkToken, detailArticle)
 router.get('/searchAll', checkToken, searchAll)
 router.get('/searchShowArt', checkToken, searchShowArt)
 router.get('/deleteReply', checkToken, deleteReply)
-router.get('/deleteArticle', checkToken, deleteArticle)
+router.post('/deleteArticle', checkToken, deleteArticle)
 router.get('/deleteMark', checkToken, deleteMark)
 router.get('/editShow', checkToken, editShow)
 router.get('/updatePassword', checkToken, updatePassword)
@@ -160,6 +165,8 @@ router.get('/addLike', addLike)
 router.get('/allBlogs', allBlogs)
 router.get('/detailBlog', detailBlog)
 router.get('/carousel', carousel)
+router.post('/searchKeyword', searchKeyword)
+router.post('/registC', registC)
 
 /**
  *  爬虫
@@ -167,5 +174,6 @@ router.get('/carousel', carousel)
 router.get('/frontEndBlog', frontEndBlog)
 router.get('/backEndBlog', backEndBlog)
 router.get('/chainBlog', chainBlog)
+router.get('/activities', activities)
 
 module.exports = router

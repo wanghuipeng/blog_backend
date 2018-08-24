@@ -2,6 +2,9 @@ const db = require('../db/model.js')
 const ArticleModel = db.articleAPI
 const ConcernedModel = db.concernedAPI
 const siteReadingModel = db.siteReadingAPI
+const FrontEndModel = db.frontEndItemAPI
+const BackEndModel = db.backEndItemAPI
+const ChainModel = db.chainItemAPI
 const mongoose = require('mongoose')
 const lodash = require('lodash')
 const fs = require('fs')
@@ -136,7 +139,7 @@ exports.EDIT_ARTICLE_INFO_API = async(ctx, next) => {
     }
     // 删除文章
 exports.DELETE_ARTICLE_INFO_API = async(ctx, next) => {
-        let getParams = ctx.request.query
+        let getParams = ctx.request.body
         try {
             let data = await ArticleModel.findByIdAndRemove(getParams.id).exec()
             if (data) {
@@ -799,6 +802,33 @@ exports.INDEX_PAGE_INFO_API = async(ctx, next) => {
             ctx.body = resObj(0, '查询出错', e.toString())
         }
     }
+    // searchKeyword
+exports.SEARCH_KEYWORD_INFO_API = async(ctx, next) => {
+        let getParams = ctx.request.body
+        try {
+            let data = await searchKeyword(getParams)
+            let result = {}
+            let resData = []
+            data.data.forEach((item, i) => {
+                let obj = {}
+                obj.id = item._id
+                obj.type = item.type
+                obj.title = item.title
+                obj.author = item.author
+                obj.content = item.content
+                obj.updateTime = item.updateTime === null ? null : FormatDate(item.updateTime, 1)
+                obj.createTime = item.createTime === null ? null : FormatDate(item.createTime, 1)
+                obj.pv = item.pv
+                obj.thumbnail = item.thumbnail
+                resData.push(obj)
+            })
+            result.count = data.length
+            result.list = resData
+            ctx.body = resObj(1, '查询成功', result)
+        } catch (e) {
+            ctx.body = resObj(0, '查询出错', e.toString())
+        }
+    }
     // allBlogs
 exports.ALL_BLOGS_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
@@ -1072,33 +1102,54 @@ const searchArticle = async(info) => {
     }
     // C端
 const searchBlog = async(info) => {
+        let count = parseInt(info.pageNum ? info.pageNum : 0)
+            // 分页
+        let skipNum
+        if (info.pageNum && info.page) {
+            skipNum = (info.page - 1) * info.pageNum
+        }
+        // 排序
+        let sortWay
+        if (info.time) {
+            sortWay = { time: info.time }
+        } else if (info.pv) {
+            sortWay = { pv: info.pv }
+        } else {
+            sortWay = { time: -1 }
+        }
+        let searchInfo = {}
+        if (info.author) {
+            searchInfo.author = info.author
+        }
+        if (info.title) {
+            searchInfo.title = info.title
+        }
+        if (info.type) {
+            searchInfo.type = info.type
+        }
+        let length = await ArticleModel.find(searchInfo).count()
+        let data = await ArticleModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
+        return {
+            length: length,
+            data: data
+        }
+    }
+    // C端关键字搜索
+const searchKeyword = async(info) => {
     let count = parseInt(info.pageNum ? info.pageNum : 0)
         // 分页
     let skipNum
     if (info.pageNum && info.page) {
         skipNum = (info.page - 1) * info.pageNum
     }
-    // 排序
-    let sortWay
-    if (info.time) {
-        sortWay = { time: info.time }
-    } else if (info.pv) {
-        sortWay = { pv: info.pv }
-    } else {
-        sortWay = { time: -1 }
+    let searchInfo1 = {}
+    let searchInfo2 = {}
+    if (info.keyword) {
+        searchInfo1.title = new RegExp(info.keyword)
+        searchInfo2.sd_title = new RegExp(info.keyword)
     }
-    let searchInfo = {}
-    if (info.author) {
-        searchInfo.author = info.author
-    }
-    if (info.title) {
-        searchInfo.title = info.title
-    }
-    if (info.type) {
-        searchInfo.type = info.type
-    }
-    let length = await ArticleModel.find(searchInfo).count()
-    let data = await ArticleModel.find(searchInfo).limit(count).skip(skipNum).sort(sortWay).exec()
+    let length = await ArticleModel.find(searchInfo1).count()
+    let data = await ArticleModel.find(searchInfo1).limit(count).skip(skipNum).exec()
     return {
         length: length,
         data: data

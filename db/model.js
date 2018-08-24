@@ -33,6 +33,14 @@ let adminUser = {
     remark: { type: String, default: '暂无' },
     joinTime: { type: Date, default: Date.now }
 };
+// C端用户项
+let cUser = {
+    name: String,
+    account: String,
+    password: String,
+    token: String,
+    joinTime: { type: Date, default: Date.now }
+};
 // 登录日志
 let loginLogs = {
     user: String,
@@ -89,29 +97,46 @@ let chainItem = {
     sd_author: String,
     sd_time: String
 };
+//活动推荐
+let actItem = {
+    sd_id: String,
+    sd_month: String,
+    sd_day: String,
+    sd_title: String,
+    sd_base: String,
+    sd_date: String,
+    sd_state: String
+};
+
 let articleSchema = new Schema(articleItem);
 let userSchema = new Schema(adminUser);
+let cUserSchema = new Schema(cUser);
 let logSchema = new Schema(loginLogs);
 let concernedSchema = new Schema(concernedUser);
 let siteReadingSchema = new Schema(siteReading);
 let frontEndItemSchema = new Schema(frontEndItem);
 let backEndItemSchema = new Schema(backEndItem);
 let chainItemSchema = new Schema(chainItem);
+let actItemSchema = new Schema(actItem);
 
 let articleModel = mongodb.model("articleModel", articleSchema);
 let userModel = mongodb.model("userModel", userSchema);
+let cUserModel = mongodb.model("cUserModel", cUserSchema);
 let logModel = mongodb.model("logModel", logSchema);
 let concernedModel = mongodb.model("concernedModel", concernedSchema);
 let siteReadingModel = mongodb.model("siteReadingModel", siteReadingSchema);
 let frontEndItemModel = mongodb.model("frontEndItemModel", frontEndItemSchema);
 let backEndItemModel = mongodb.model("backEndItemModel", backEndItemSchema);
 let chainItemModel = mongodb.model("chainItemModel", chainItemSchema);
+let actItemModel = mongodb.model("actItemModel", actItemSchema);
 
 exports.articleAPI = articleModel;
 exports.userAPI = userModel;
+exports.cUserAPI = cUserModel;
 exports.logAPI = logModel;
 exports.concernedAPI = concernedModel;
 exports.siteReadingAPI = siteReadingModel;
 exports.frontEndItemAPI = frontEndItemModel;
 exports.backEndItemAPI = backEndItemModel;
 exports.chainItemAPI = chainItemModel;
+exports.actItemAPI = actItemModel;
