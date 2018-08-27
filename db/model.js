@@ -35,10 +35,11 @@ let adminUser = {
 };
 // C端用户项
 let cUser = {
-    name: String,
     account: String,
     password: String,
+    name: String,
     token: String,
+    status: { type: Number, default: 0 },
     joinTime: { type: Date, default: Date.now }
 };
 // 登录日志

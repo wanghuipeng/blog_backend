@@ -47,7 +47,7 @@ exports.REGISTC_INFO_API = async(ctx, next) => {
     let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
     let logInfo = logObj(addInfo.name, userIp, "注册账号")
     try {
-        await UserModel.find(userObj).exec()
+        await CUserModel.find(userObj).exec()
             .then((data) => {
                 if (data.length !== 0) {
                     ctx.body = resObj(2, '用户名已存在')
@@ -68,6 +68,92 @@ exports.REGISTC_INFO_API = async(ctx, next) => {
             })
             .catch((e) => {
                 ctx.body = resObj(0, '发生错误', e.toString())
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
+// C端登录
+exports.LOGINC_INFO_API = async(ctx, next) => {
+    let Info = ctx.request.body
+    if (!Info.account || !Info.password) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '参数不全')
+        return
+    }
+    let userObj = {}
+    userObj.account = Info.account
+    let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
+    let logInfo = logObj(Info.account, userIp, "登录系统")
+    try {
+        await CUserModel.find(userObj).exec()
+            .then((data) => {
+                if (data.length == 1) {
+                    if (data[0].password == Info.password) {
+                        // 日志服务
+                        let logRegister = new LogModel(logInfo)
+                        logRegister.save()
+                        const token = jwt.sign({
+                            user_id: data[0]._id,
+                        }, secret, {
+                            expiresIn: '12h' //过期时间设置为60秒。那么decode这个token的时候得到的过期时间为 : 创建token的时间 +　设置的值
+                        });
+                        userObj.password = Info.password
+                        CUserModel.findOneAndUpdate(userObj, { token: token, status: 1 }).exec()
+                        ctx.body = resObj(1, '登录成功', token)
+                    } else {
+                        ctx.body = resObj(2, '密码错误')
+                    }
+                } else {
+                    ctx.body = resObj(2, '不存在用户名')
+                }
+            })
+            .catch((e) => {
+                ctx.body = resObj(0, '发生错误', e.toString())
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
+// c端退出
+exports.LOGOUTC_INFO_API = async(ctx, next) => {
+    let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
+    let logInfo = logObj('', userIp, "退出系统")
+    try {
+        await CUserModel.findOneAndUpdate({ token: ctx.header.authorization }, { status: 0 }).exec()
+            .then((data) => {
+                // 日志服务
+                let logRegister = new LogModel(logInfo)
+                logRegister.save()
+                ctx.status = 200
+                ctx.body = resObj(1, '退出成功')
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e.toString())
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
+// C端用户信息
+exports.GET_CUSER_INFO_API = async(ctx, next) => {
+    try {
+        await CUserModel.find({ token: ctx.header.authorization }).sort({ joinTime: -1 }).exec()
+            .then((data) => {
+                console.log(data)
+                let resData = {
+                    userName: data[0].name,
+                    userStatus: data[0].status
+                }
+                ctx.body = resObj(1, 'success', '', resData)
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e)
             })
     } catch (e) {
         ctx.body = resObj(0, '数据库错误', e.toString())
@@ -135,7 +221,7 @@ exports.USER_LOGIN_API = async(ctx, next) => {
                             const token = jwt.sign({
                                 user_id: data[0]._id,
                             }, secret, {
-                                expiresIn: '12h' //过期时间设置为60妙。那么decode这个token的时候得到的过期时间为 : 创建token的时间 +　设置的值
+                                expiresIn: '12h' //过期时间设置为60秒。那么decode这个token的时候得到的过期时间为 : 创建token的时间 +　设置的值
                             });
                             userObj.password = Info.password
                             UserModel.findOneAndUpdate(userObj, { token: token }).exec()
