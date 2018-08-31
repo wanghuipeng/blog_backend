@@ -147,7 +147,8 @@ exports.GET_CUSER_INFO_API = async(ctx, next) => {
                 console.log(data)
                 let resData = {
                     userName: data[0].name,
-                    userStatus: data[0].status
+                    userStatus: data[0].status,
+                    account: data[0].account
                 }
                 ctx.body = resObj(1, 'success', '', resData)
             })

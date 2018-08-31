@@ -1,5 +1,6 @@
 const db = require('../db/model.js')
 const ArticleModel = db.articleAPI
+const RemarkModel = db.remarkAPI
 const ConcernedModel = db.concernedAPI
 const siteReadingModel = db.siteReadingAPI
 const FrontEndModel = db.frontEndItemAPI
@@ -107,6 +108,8 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
                     obj.type = item.type
                     obj.content = item.content
                     obj.pv = item.pv
+                    obj.remarkList = item.remarkList
+                    obj.remarkNum = item.remarkNum
                     resData.push(obj)
                 })
                 let data = resData[0]
@@ -152,6 +155,21 @@ exports.DELETE_ARTICLE_INFO_API = async(ctx, next) => {
             ctx.body = resObj(0, '删除文章出错', e.toString())
         }
     }
+    // 删除评论
+exports.DELETE_REMARK_INFO_API = async(ctx, next) => {
+        let getParams = ctx.request.body
+        try {
+            let data = await RemarkModel.findByIdAndRemove(getParams.remarkId).exec()
+            if (data) {
+                ctx.body = resObj(1, '删除评论成功', data)
+            } else {
+                ctx.body = resObj(2, '评论不存在')
+            }
+        } catch (e) {
+            console.log(e)
+            ctx.body = resObj(0, '删除评论出错', e.toString())
+        }
+    }
     // search_all
 exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
@@ -169,6 +187,7 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
                 obj.type = item.type
                 obj.pv = item.pv
                 obj.thumbnail = item.thumbnail
+                obj.remarkNum = item.remarkNum
                 resData.push(obj)
             })
             result.count = data.length
@@ -301,33 +320,68 @@ exports.SEARCH_SHOW_ARTICLE_INFO_API = async(ctx, next) => {
 
 // add_mark
 exports.ADD_MARK_INFO_API = async(ctx, next) => {
-        let getParams = ctx.request.body
-        let info = getParams.id
-        let markObj = {}
-        markObj.userName = getParams.user
-        markObj.userEmail = getParams.email
-        markObj.markContent = getParams.markContent
+    let getParams = ctx.request.body
+    let info = getParams.id
+    let markObj = {}
+    markObj.name = getParams.userName
+    markObj.account = getParams.account
+    markObj.markContent = getParams.markContent
+    markObj.blogId = getParams.id
+    try {
+        await ArticleModel.findById(info).exec()
+            .then((data) => {
+                if (data) {
+                    data.remarkNum = data.remarkNum + 1 // 评论总数
+                    data.remarkList.push(markObj)
+                    let addData = new ArticleModel(data)
+                    addData.save()
+                    ctx.body = resObj(1, '评论成功', data)
+                } else {
+                    ctx.body = resObj(2, '没有查找到文章')
+                }
+            })
+            .catch((e) => {
+                ctx.status = 200
+                ctx.body = resObj(0, '评论出错', e.toString())
+            })
+    } catch (e) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '数据库错误', e.toString())
+    }
+
+    try {
+        console.log(markObj)
+        remarkData = new RemarkModel(markObj)
+        let data = await remarkData.save()
+        ctx.body = resObj(1, '查询成功', data)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
+
+// 获取所有评论
+exports.SEARCH_REMARK_INFO_API = async(ctx, next) => {
+        let getParams = ctx.request.query
         try {
-            await ArticleModel.findById(info).exec()
-                .then((data) => {
-                    console.log(data)
-                    if (data) {
-                        data.markNum = data.markNum + 1 // 评论总数
-                        data.markList.push(markObj)
-                        let addData = new ArticleModel(data)
-                        addData.save()
-                        ctx.body = resObj(1, '评论成功', data)
-                    } else {
-                        ctx.body = resObj(2, '没有查找到文章')
-                    }
-                })
-                .catch((e) => {
-                    ctx.status = 200
-                    ctx.body = resObj(0, '评论出错', e.toString())
-                })
+            let data = await searchRemark(getParams)
+            let result = {}
+            let remarkList = []
+            data.list.forEach((item, i) => {
+                let obj = {}
+                obj.remarkId = item._id
+                obj.name = item.name
+                obj.account = item.account
+                obj.blogId = item.blogId
+                obj.time = item.time
+                obj.markContent = item.markContent
+                remarkList.push(obj)
+            })
+            result.length = data.length
+            result.list = remarkList
+            console.log(result.list)
+            ctx.body = resObj(1, '查询成功', result)
         } catch (e) {
-            ctx.status = 200
-            ctx.body = resObj(-1, '数据库错误', e.toString())
+            ctx.body = resObj(0, '查询出错', e.toString())
         }
     }
     // delete_mark
@@ -1134,7 +1188,31 @@ const searchBlog = async(info) => {
             data: data
         }
     }
-    // C端关键字搜索
+    // 搜索评论
+const searchRemark = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+
+    let length = await RemarkModel.find().count()
+    let data = await RemarkModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        list: data
+    }
+}
+
+// C端关键字搜索
 const searchKeyword = async(info) => {
     let count = parseInt(info.pageNum ? info.pageNum : 0)
         // 分页

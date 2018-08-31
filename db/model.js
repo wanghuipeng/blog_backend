@@ -13,7 +13,23 @@ let articleItem = {
     markdown: String,
     imgUrl: { type: String },
     pv: { type: Number, default: 0 },
-    thumbnail: String
+    thumbnail: String,
+    remarkList: [{
+        name: String,
+        account: String,
+        markContent: { type: String, default: '' },
+        time: { type: Number, default: Date.now.valueOf() },
+        blogId: String
+    }],
+    remarkNum: { type: Number, default: 0 }
+};
+// 评论项
+let remarkItem = {
+    name: String,
+    account: String,
+    markContent: { type: String, default: '' },
+    time: { type: Number, default: Date.now.valueOf() },
+    blogId: String
 };
 // 分析数据
 let siteReading = {
@@ -110,6 +126,7 @@ let actItem = {
 };
 
 let articleSchema = new Schema(articleItem);
+let remarkSchema = new Schema(remarkItem);
 let userSchema = new Schema(adminUser);
 let cUserSchema = new Schema(cUser);
 let logSchema = new Schema(loginLogs);
@@ -121,6 +138,7 @@ let chainItemSchema = new Schema(chainItem);
 let actItemSchema = new Schema(actItem);
 
 let articleModel = mongodb.model("articleModel", articleSchema);
+let remarkModel = mongodb.model("remarkModel", remarkSchema);
 let userModel = mongodb.model("userModel", userSchema);
 let cUserModel = mongodb.model("cUserModel", cUserSchema);
 let logModel = mongodb.model("logModel", logSchema);
@@ -132,6 +150,7 @@ let chainItemModel = mongodb.model("chainItemModel", chainItemSchema);
 let actItemModel = mongodb.model("actItemModel", actItemSchema);
 
 exports.articleAPI = articleModel;
+exports.remarkAPI = remarkModel;
 exports.userAPI = userModel;
 exports.cUserAPI = cUserModel;
 exports.logAPI = logModel;

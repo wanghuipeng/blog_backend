@@ -40,11 +40,13 @@ const add = articleAPI.ADD_ARTICLE_INFO_API
 const searchAll = articleAPI.SEARCH_ARTICLE_INFO_API
 const editArticle = articleAPI.EDIT_ARTICLE_INFO_API
 const detailArticle = articleAPI.DETAIL_ARTICLE_INFO_API
+const searchRemark = articleAPI.SEARCH_REMARK_INFO_API
     // upload
 const uploadImage = articleAPI.UPLOAD_IMAGE_API
 
 const deleteReply = articleAPI.DETELE_REPLY_INFO_API
 const deleteArticle = articleAPI.DELETE_ARTICLE_INFO_API
+const deleteRemark = articleAPI.DELETE_REMARK_INFO_API
 const deleteMark = articleAPI.DETELE_MARK_INFO_API
 const editShow = articleAPI.EDIT_SHOW_INFO_API
 
@@ -118,10 +120,12 @@ const activities = actAPI.ACT_INFO_API
 router.post('/addArticle', checkToken, add)
 router.post('/editArticle', checkToken, editArticle)
 router.get('/detailArticle', checkToken, detailArticle)
+router.get('/searchRemark', checkToken, searchRemark)
 router.get('/searchAll', checkToken, searchAll)
 router.get('/searchShowArt', checkToken, searchShowArt)
 router.get('/deleteReply', checkToken, deleteReply)
 router.post('/deleteArticle', checkToken, deleteArticle)
+router.post('/deleteRemark', checkToken, deleteRemark)
 router.get('/deleteMark', checkToken, deleteMark)
 router.get('/editShow', checkToken, editShow)
 router.get('/updatePassword', checkToken, updatePassword)
@@ -162,7 +166,7 @@ router.get('/searchOne', searchOne)
 router.get('/searchAllTags', searchAllTags)
 router.get('/searchClassic', searchClassic)
 router.get('/searchTag', searchTag)
-router.post('/addMark', addMark)
+router.post('/addMark', checkToken, addMark)
 router.post('/addReply', addReply)
 router.get('/addLike', addLike)
 router.get('/allBlogs', allBlogs)
