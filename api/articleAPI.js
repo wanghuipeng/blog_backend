@@ -158,8 +158,22 @@ exports.DELETE_ARTICLE_INFO_API = async(ctx, next) => {
     // 删除评论
 exports.DELETE_REMARK_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.body
+        if (!getParams.remarkId || !getParams.blogId) {
+            ctx.status = 200
+            ctx.body = resObj(-1, '参数不全')
+            return
+        }
         try {
             let data = await RemarkModel.findByIdAndRemove(getParams.remarkId).exec()
+            let remarkListData = await ArticleModel.findById(getParams.blogId).exec()
+            remarkListData.remarkList.forEach((item, i) => {
+                console.log(11111111, remarkListData.remarkList[i])
+                if (item._id == getParams.remarkId) {
+                    remarkListData.remarkList[i] = {}
+                }
+            })
+            await ArticleModel.findOneAndUpdate(getParams.blogId, { remarkList: remarkListData.remarkList }).exec()
+                //await ArticleModel.findOneAndUpdate(getParams.blogId, { remarkList: [] }).exec()
             if (data) {
                 ctx.body = resObj(1, '删除评论成功', data)
             } else {
