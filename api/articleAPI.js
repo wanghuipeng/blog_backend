@@ -28,7 +28,7 @@ var resObj = (code, msg, data) => {
 }
 
 /**
- *  文章信息  
+ *  文章信息
  */
 // add
 exports.ADD_ARTICLE_INFO_API = async(ctx, next) => {
@@ -91,7 +91,15 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
             ctx.body = resObj(-1, '参数不全')
             return
         }
+
         try {
+            let remarkData = await RemarkModel.find().exec()
+            let remarkList = []
+            remarkData.forEach((item, i) => {
+                if (item.blogId == getParams.id) {
+                    remarkList.push(item)
+                }
+            })
             await ArticleModel.findById(getParams.id).exec().then(temp => {
                 let pv = temp.pv
                 ArticleModel.findByIdAndUpdate(getParams.id, { pv: pv + 1 }).exec()
@@ -108,7 +116,7 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
                     obj.type = item.type
                     obj.content = item.content
                     obj.pv = item.pv
-                    obj.remarkList = item.remarkList
+                    obj.remarkList = remarkList
                     obj.remarkNum = item.remarkNum
                     resData.push(obj)
                 })
@@ -165,15 +173,6 @@ exports.DELETE_REMARK_INFO_API = async(ctx, next) => {
         }
         try {
             let data = await RemarkModel.findByIdAndRemove(getParams.remarkId).exec()
-            let remarkListData = await ArticleModel.findById(getParams.blogId).exec()
-            remarkListData.remarkList.forEach((item, i) => {
-                console.log(11111111, remarkListData.remarkList[i])
-                if (item._id == getParams.remarkId) {
-                    remarkListData.remarkList[i] = {}
-                }
-            })
-            await ArticleModel.findOneAndUpdate(getParams.blogId, { remarkList: remarkListData.remarkList }).exec()
-                //await ArticleModel.findOneAndUpdate(getParams.blogId, { remarkList: [] }).exec()
             if (data) {
                 ctx.body = resObj(1, '删除评论成功', data)
             } else {
@@ -341,35 +340,35 @@ exports.ADD_MARK_INFO_API = async(ctx, next) => {
     markObj.account = getParams.account
     markObj.markContent = getParams.markContent
     markObj.blogId = getParams.id
-    try {
-        await ArticleModel.findById(info).exec()
-            .then((data) => {
-                if (data) {
-                    data.remarkNum = data.remarkNum + 1 // 评论总数
-                    data.remarkList.push(markObj)
-                    let addData = new ArticleModel(data)
-                    addData.save()
-                    ctx.body = resObj(1, '评论成功', data)
-                } else {
-                    ctx.body = resObj(2, '没有查找到文章')
-                }
-            })
-            .catch((e) => {
-                ctx.status = 200
-                ctx.body = resObj(0, '评论出错', e.toString())
-            })
-    } catch (e) {
-        ctx.status = 200
-        ctx.body = resObj(-1, '数据库错误', e.toString())
-    }
+        // try {
+        //     await ArticleModel.findById(info).exec()
+        //         .then((data) => {
+        //             if (data) {
+        //                 data.remarkNum = data.remarkNum + 1 // 评论总数
+        //                 data.remarkList.push(markObj)
+        //                 let addData = new ArticleModel(data)
+        //                 addData.save()
+        //                 ctx.body = resObj(1, '评论成功', data)
+        //             } else {
+        //                 ctx.body = resObj(2, '没有查找到文章')
+        //             }
+        //         })
+        //         .catch((e) => {
+        //             ctx.status = 200
+        //             ctx.body = resObj(0, '评论出错', e.toString())
+        //         })
+        // } catch (e) {
+        //     ctx.status = 200
+        //     ctx.body = resObj(-1, '数据库错误', e.toString())
+        // }
 
     try {
         console.log(markObj)
         remarkData = new RemarkModel(markObj)
         let data = await remarkData.save()
-        ctx.body = resObj(1, '查询成功', data)
+        ctx.body = resObj(1, '评论成功', data)
     } catch (e) {
-        ctx.body = resObj(0, '查询出错', e.toString())
+        ctx.body = resObj(0, '评论出错', e.toString())
     }
 }
 
@@ -948,7 +947,7 @@ exports.SEARCH_CLASS_INFO_API = async(ctx, next) => {
             ctx.body = resObj(-1, '数据库错误', e.toString())
         }
     }
-    // search_tag 
+    // search_tag
 exports.SEARCH_TAG_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
         let info = { 'tag.tagId': { $in: getParams.tag } }
@@ -1420,13 +1419,13 @@ const FormatDate = (strTime, type) => {
 }
 Date.prototype.Format = function(fmt) {
         var o = {
-            "M+": this.getMonth() + 1, //月份 
-            "d+": this.getDate(), //日 
-            "h+": this.getHours(), //小时 
-            "m+": this.getMinutes(), //分 
-            "s+": this.getSeconds(), //秒 
-            "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
-            "S": this.getMilliseconds() //毫秒 
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
         };
         if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
         for (var k in o)

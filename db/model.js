@@ -14,13 +14,13 @@ let articleItem = {
     imgUrl: { type: String },
     pv: { type: Number, default: 0 },
     thumbnail: String,
-    remarkList: [{
-        name: String,
-        account: String,
-        markContent: { type: String, default: '' },
-        time: { type: Number, default: Date.now.valueOf() },
-        blogId: String
-    }],
+    // remarkList: [{
+    //     name: String,
+    //     account: String,
+    //     markContent: { type: String, default: '' },
+    //     time: { type: Number, default: Date.now.valueOf() },
+    //     blogId: String
+    // }],
     remarkNum: { type: Number, default: 0 }
 };
 // 评论项
