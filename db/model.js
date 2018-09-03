@@ -1,6 +1,13 @@
 const mongodb = require('./config.js');
 const Schema = mongodb.Schema;
 
+// 点赞文章
+let praiseItem = {
+    blogId: String,
+    praiseStatus: { type: Number, default: 0 },
+    userName: String,
+    time: { type: Number, default: Date.now.valueOf() }
+};
 // 文章项
 let articleItem = {
     createTime: { type: Date, default: Date.now },
@@ -21,7 +28,7 @@ let articleItem = {
     //     time: { type: Number, default: Date.now.valueOf() },
     //     blogId: String
     // }],
-    remarkNum: { type: Number, default: 0 }
+    // remarkNum: { type: Number, default: 0 }
 };
 // 评论项
 let remarkItem = {
@@ -126,6 +133,7 @@ let actItem = {
 };
 
 let articleSchema = new Schema(articleItem);
+let praiseSchema = new Schema(praiseItem);
 let remarkSchema = new Schema(remarkItem);
 let userSchema = new Schema(adminUser);
 let cUserSchema = new Schema(cUser);
@@ -138,6 +146,7 @@ let chainItemSchema = new Schema(chainItem);
 let actItemSchema = new Schema(actItem);
 
 let articleModel = mongodb.model("articleModel", articleSchema);
+let praiseModel = mongodb.model("praiseModel", praiseSchema);
 let remarkModel = mongodb.model("remarkModel", remarkSchema);
 let userModel = mongodb.model("userModel", userSchema);
 let cUserModel = mongodb.model("cUserModel", cUserSchema);
@@ -150,6 +159,7 @@ let chainItemModel = mongodb.model("chainItemModel", chainItemSchema);
 let actItemModel = mongodb.model("actItemModel", actItemSchema);
 
 exports.articleAPI = articleModel;
+exports.praiseAPI = praiseModel;
 exports.remarkAPI = remarkModel;
 exports.userAPI = userModel;
 exports.cUserAPI = cUserModel;

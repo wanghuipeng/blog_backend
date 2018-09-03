@@ -1,6 +1,7 @@
 const db = require('../db/model.js')
 const ArticleModel = db.articleAPI
 const RemarkModel = db.remarkAPI
+const PraiseModel = db.praiseAPI
 const ConcernedModel = db.concernedAPI
 const siteReadingModel = db.siteReadingAPI
 const FrontEndModel = db.frontEndItemAPI
@@ -100,6 +101,15 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
                     remarkList.push(item)
                 }
             })
+
+            let praiseData = await PraiseModel.find().exec()
+            let praiseList = []
+            praiseData.forEach((item, i) => {
+                if (item.blogId == getParams.id) {
+                    praiseList.push(item)
+                }
+            })
+
             await ArticleModel.findById(getParams.id).exec().then(temp => {
                 let pv = temp.pv
                 ArticleModel.findByIdAndUpdate(getParams.id, { pv: pv + 1 }).exec()
@@ -117,7 +127,7 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
                     obj.content = item.content
                     obj.pv = item.pv
                     obj.remarkList = remarkList
-                    obj.remarkNum = item.remarkNum
+                    obj.praiseNum = praiseList.length
                     resData.push(obj)
                 })
                 let data = resData[0]
@@ -187,10 +197,21 @@ exports.DELETE_REMARK_INFO_API = async(ctx, next) => {
 exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
         try {
+            let remarkData = await RemarkModel.find().exec()
+
             let data = await searchArticle(getParams)
             let result = {}
             let resData = []
+
+
             data.data.forEach((item, i) => {
+                let remarkNum = 0
+                remarkData.forEach((item1, i1) => {
+                    if (item1.blogId == item._id) {
+                        remarkNum++
+                    }
+                })
+                console.log(1111111111, remarkNum)
                 let obj = {}
                 obj.id = item._id
                 obj.title = item.title
@@ -200,7 +221,7 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
                 obj.type = item.type
                 obj.pv = item.pv
                 obj.thumbnail = item.thumbnail
-                obj.remarkNum = item.remarkNum
+                obj.remarkNum = remarkNum
                 resData.push(obj)
             })
             result.count = data.length
@@ -340,28 +361,6 @@ exports.ADD_MARK_INFO_API = async(ctx, next) => {
     markObj.account = getParams.account
     markObj.markContent = getParams.markContent
     markObj.blogId = getParams.id
-        // try {
-        //     await ArticleModel.findById(info).exec()
-        //         .then((data) => {
-        //             if (data) {
-        //                 data.remarkNum = data.remarkNum + 1 // 评论总数
-        //                 data.remarkList.push(markObj)
-        //                 let addData = new ArticleModel(data)
-        //                 addData.save()
-        //                 ctx.body = resObj(1, '评论成功', data)
-        //             } else {
-        //                 ctx.body = resObj(2, '没有查找到文章')
-        //             }
-        //         })
-        //         .catch((e) => {
-        //             ctx.status = 200
-        //             ctx.body = resObj(0, '评论出错', e.toString())
-        //         })
-        // } catch (e) {
-        //     ctx.status = 200
-        //     ctx.body = resObj(-1, '数据库错误', e.toString())
-        // }
-
     try {
         console.log(markObj)
         remarkData = new RemarkModel(markObj)
@@ -369,6 +368,22 @@ exports.ADD_MARK_INFO_API = async(ctx, next) => {
         ctx.body = resObj(1, '评论成功', data)
     } catch (e) {
         ctx.body = resObj(0, '评论出错', e.toString())
+    }
+}
+
+// 点赞文章
+exports.PRAISE_BLOG_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.body
+    let markObj = {}
+    markObj.blogId = getParams.blogId
+    markObj.userName = getParams.userName
+    markObj.praiseStatus = 1
+    try {
+        praiseData = new PraiseModel(markObj)
+        let data = await praiseData.save()
+        ctx.body = resObj(1, '点赞成功', data)
+    } catch (e) {
+        ctx.body = resObj(0, '点赞出错', e.toString())
     }
 }
 
