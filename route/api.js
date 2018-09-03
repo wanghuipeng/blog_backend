@@ -97,10 +97,12 @@ const detailBlog = articleAPI.DETAIL_BLOG_INFO_API
 const carousel = articleAPI.CAROUSEL_BLOG_INFO_API
 const searchKeyword = articleAPI.SEARCH_KEYWORD_INFO_API
 const praiseBlog = articleAPI.PRAISE_BLOG_INFO_API
+const collectBlog = articleAPI.COLLECT_BLOG_INFO_API
 const registC = userAPI.REGISTC_INFO_API
 const loginC = userAPI.LOGINC_INFO_API
 const logoutC = userAPI.LOGOUTC_INFO_API
 const getUserInfoC = userAPI.GET_CUSER_INFO_API
+const premark = articleAPI.PRAISE_REMARK_INFO_API
     /**
      *  爬虫（来自segmentDefault）
      */
@@ -175,11 +177,12 @@ router.get('/detailBlog', detailBlog)
 router.get('/carousel', carousel)
 router.post('/searchKeyword', searchKeyword)
 router.post('/praiseBlog', checkToken, praiseBlog)
+router.post('/collectBlog', checkToken, collectBlog)
 router.post('/registC', registC)
 router.post('/loginC', loginC)
 router.get('/logoutC', checkToken, logoutC)
 router.get('/getUserInfoC', checkToken, getUserInfoC)
-
+router.get('/premark', checkToken, premark)
 
 /**
  *  爬虫

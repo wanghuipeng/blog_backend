@@ -2,6 +2,8 @@ const db = require('../db/model.js')
 const ArticleModel = db.articleAPI
 const RemarkModel = db.remarkAPI
 const PraiseModel = db.praiseAPI
+const PremarkModel = db.premarkAPI
+const CollectModel = db.collectAPI
 const ConcernedModel = db.concernedAPI
 const siteReadingModel = db.siteReadingAPI
 const FrontEndModel = db.frontEndItemAPI
@@ -110,6 +112,14 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
                 }
             })
 
+            let collectData = await CollectModel.find().exec()
+            let collectList = []
+            collectData.forEach((item, i) => {
+                if (item.blogId == getParams.id) {
+                    collectList.push(item)
+                }
+            })
+
             await ArticleModel.findById(getParams.id).exec().then(temp => {
                 let pv = temp.pv
                 ArticleModel.findByIdAndUpdate(getParams.id, { pv: pv + 1 }).exec()
@@ -127,7 +137,8 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
                     obj.content = item.content
                     obj.pv = item.pv
                     obj.remarkList = remarkList
-                    obj.praiseNum = praiseList.length
+                    obj.praiseList = praiseList
+                    obj.collectList = collectList
                     resData.push(obj)
                 })
                 let data = resData[0]
@@ -198,6 +209,8 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
         let getParams = ctx.request.query
         try {
             let remarkData = await RemarkModel.find().exec()
+            let praiseData = await PraiseModel.find().exec()
+            let collectData = await CollectModel.find().exec()
 
             let data = await searchArticle(getParams)
             let result = {}
@@ -211,7 +224,18 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
                         remarkNum++
                     }
                 })
-                console.log(1111111111, remarkNum)
+                let praiseNum = 0
+                praiseData.forEach((item1, i1) => {
+                    if (item1.blogId == item._id) {
+                        praiseNum++
+                    }
+                })
+                let collectNum = 0
+                collectData.forEach((item1, i1) => {
+                    if (item1.blogId == item._id) {
+                        collectNum++
+                    }
+                })
                 let obj = {}
                 obj.id = item._id
                 obj.title = item.title
@@ -222,6 +246,8 @@ exports.SEARCH_ARTICLE_INFO_API = async(ctx, next) => {
                 obj.pv = item.pv
                 obj.thumbnail = item.thumbnail
                 obj.remarkNum = remarkNum
+                obj.praiseNum = praiseNum
+                obj.collectNum = collectNum
                 resData.push(obj)
             })
             result.count = data.length
@@ -371,19 +397,105 @@ exports.ADD_MARK_INFO_API = async(ctx, next) => {
     }
 }
 
+// 点赞评论
+exports.PRAISE_REMARK_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    let markObj = {}
+    markObj.remarkId = getParams.remarkId
+    markObj.premarkStatus = Number(getParams.premarkStatus)
+    console.log(22222222, getParams)
+    try {
+        if (markObj.premarkStatus === 0) {
+            markObj.premarkStatus = 1
+            premark = new PremarkModel(markObj)
+            let data = await premark.save()
+            ctx.body = resObj(1, '点赞成功', data)
+        } else if (markObj.premarkStatus === 1) {
+            await PremarkModel.findByIdAndRemove(markObj.remarkId).exec()
+                .then((data) => {
+                    ctx.status = 200
+                    if (data) {
+                        ctx.body = resObj(1, '取消点赞', data)
+                    } else {
+                        ctx.body = resObj(2, '不存在项')
+                    }
+                })
+                .catch((e) => {
+                    ctx.status = 200
+                    ctx.body = resObj(0, '取消出错', e.toString())
+                })
+        }
+    } catch (e) {
+        ctx.body = resObj(0, '点赞出错', e.toString())
+    }
+}
+
 // 点赞文章
 exports.PRAISE_BLOG_INFO_API = async(ctx, next) => {
     let getParams = ctx.request.body
     let markObj = {}
     markObj.blogId = getParams.blogId
     markObj.userName = getParams.userName
-    markObj.praiseStatus = 1
+    markObj.praiseStatus = getParams.praiseStatus
+    markObj.praiseId = getParams.praiseId
     try {
-        praiseData = new PraiseModel(markObj)
-        let data = await praiseData.save()
-        ctx.body = resObj(1, '点赞成功', data)
+        if (markObj.praiseStatus === 0) {
+            markObj.praiseStatus = 1
+            praiseData = new PraiseModel(markObj)
+            let data = await praiseData.save()
+            ctx.body = resObj(1, '点赞成功', data)
+        } else if (markObj.praiseStatus === 1) {
+            await PraiseModel.findByIdAndRemove(markObj.praiseId).exec()
+                .then((data) => {
+                    ctx.status = 200
+                    if (data) {
+                        ctx.body = resObj(1, '取消点赞', data)
+                    } else {
+                        ctx.body = resObj(2, '不存在项')
+                    }
+                })
+                .catch((e) => {
+                    ctx.status = 200
+                    ctx.body = resObj(0, '取消出错', e.toString())
+                })
+        }
     } catch (e) {
         ctx.body = resObj(0, '点赞出错', e.toString())
+    }
+}
+
+// 收藏文章
+exports.COLLECT_BLOG_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.body
+    let markObj = {}
+    markObj.blogId = getParams.blogId
+    markObj.userName = getParams.userName
+    markObj.collectStatus = getParams.collectStatus
+    markObj.collectId = getParams.collectId
+    try {
+        if (markObj.collectStatus === 0) {
+            markObj.collectStatus = 1
+            collectData = new CollectModel(markObj)
+            let data = await collectData.save()
+            ctx.body = resObj(1, '收藏成功', data)
+        } else if (markObj.collectStatus === 1) {
+            await CollectModel.findByIdAndRemove(markObj.collectId).exec()
+                .then((data) => {
+                    ctx.status = 200
+                    if (data) {
+                        ctx.body = resObj(1, '取消收藏', data)
+                    } else {
+                        ctx.body = resObj(2, '不存在项')
+                    }
+                })
+                .catch((e) => {
+                    ctx.status = 200
+                    ctx.body = resObj(0, '取消出错', e.toString())
+                })
+        }
+
+    } catch (e) {
+        ctx.body = resObj(0, '收藏出错', e.toString())
     }
 }
 
@@ -1033,7 +1145,6 @@ exports.UPLOAD_IMAGE_API = async(ctx, next) => {
             let fileName = ctx.req.file.filename
             let resData = {}
             resData.fileName = fileName
-            console.log(111111, process)
             resData.filePath = 'http://127.0.0.1:3000/' + 'uploads/' + fileName
             ctx.body = resObj(1, '上传成功', resData)
         } catch (e) {

@@ -1,10 +1,23 @@
 const mongodb = require('./config.js');
 const Schema = mongodb.Schema;
 
+// 点赞评论
+let premarkItem = {
+    remarkId: String,
+    premarkStatus: { type: Number, default: 0 },
+    time: { type: Number, default: Date.now.valueOf() }
+};
 // 点赞文章
 let praiseItem = {
     blogId: String,
     praiseStatus: { type: Number, default: 0 },
+    userName: String,
+    time: { type: Number, default: Date.now.valueOf() }
+};
+// 收藏文章
+let collectItem = {
+    blogId: String,
+    collectStatus: { type: Number, default: 0 },
     userName: String,
     time: { type: Number, default: Date.now.valueOf() }
 };
@@ -134,6 +147,8 @@ let actItem = {
 
 let articleSchema = new Schema(articleItem);
 let praiseSchema = new Schema(praiseItem);
+let premarkSchema = new Schema(premarkItem);
+let collectSchema = new Schema(collectItem);
 let remarkSchema = new Schema(remarkItem);
 let userSchema = new Schema(adminUser);
 let cUserSchema = new Schema(cUser);
@@ -147,6 +162,8 @@ let actItemSchema = new Schema(actItem);
 
 let articleModel = mongodb.model("articleModel", articleSchema);
 let praiseModel = mongodb.model("praiseModel", praiseSchema);
+let premarkModel = mongodb.model("premarkModel", premarkSchema);
+let collectModel = mongodb.model("collectModel", collectSchema);
 let remarkModel = mongodb.model("remarkModel", remarkSchema);
 let userModel = mongodb.model("userModel", userSchema);
 let cUserModel = mongodb.model("cUserModel", cUserSchema);
@@ -160,6 +177,8 @@ let actItemModel = mongodb.model("actItemModel", actItemSchema);
 
 exports.articleAPI = articleModel;
 exports.praiseAPI = praiseModel;
+exports.premarkAPI = premarkModel;
+exports.collectAPI = collectModel;
 exports.remarkAPI = remarkModel;
 exports.userAPI = userModel;
 exports.cUserAPI = cUserModel;
