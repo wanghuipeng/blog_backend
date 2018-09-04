@@ -5,6 +5,7 @@ const Schema = mongodb.Schema;
 let premarkItem = {
     remarkId: String,
     premarkStatus: { type: Number, default: 0 },
+    userName: String,
     time: { type: Number, default: Date.now.valueOf() }
 };
 // 点赞文章

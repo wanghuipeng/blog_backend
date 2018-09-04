@@ -33,6 +33,54 @@ var resObj = (code, msg, data) => {
 /**
  *  文章信息
  */
+
+// 点赞文章列表
+exports.SEARCH_PRAISE_BLOG_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    try {
+        let data = await searchPraiseBlog(getParams)
+        let result = {}
+        let praiseBlogList = []
+        data.list.forEach((item, i) => {
+            let obj = {}
+            obj.praiseBlogId = item._id
+            obj.name = item.userName
+            obj.blogId = item.blogId
+            obj.praiseBlogTime = item.time
+            praiseBlogList.push(obj)
+        })
+        result.length = data.length
+        result.list = praiseBlogList
+        ctx.body = resObj(1, '查询成功', result)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
+
+
+// 点赞评论列表
+exports.SEARCH_PRAISE_REMARK_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    try {
+        let data = await searchPraiseRemark(getParams)
+        let result = {}
+        let praiseRemarkList = []
+        data.list.forEach((item, i) => {
+            let obj = {}
+            obj.praiseRemarkId = item._id
+            obj.name = item.userName
+            obj.remarkId = item.remarkId
+            obj.praiseRemarkTime = item.time
+            praiseRemarkList.push(obj)
+        })
+        result.length = data.length
+        result.list = praiseRemarkList
+        ctx.body = resObj(1, '查询成功', result)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
+
 // add
 exports.ADD_ARTICLE_INFO_API = async(ctx, next) => {
         let Info = ctx.request.body
@@ -402,8 +450,8 @@ exports.PRAISE_REMARK_INFO_API = async(ctx, next) => {
     let getParams = ctx.request.query
     let markObj = {}
     markObj.remarkId = getParams.remarkId
+    markObj.userName = getParams.userName
     markObj.premarkStatus = Number(getParams.premarkStatus)
-    console.log(22222222, getParams)
     try {
         if (markObj.premarkStatus === 0) {
             markObj.premarkStatus = 1
@@ -1345,6 +1393,55 @@ const searchRemark = async(info) => {
 
     let length = await RemarkModel.find().count()
     let data = await RemarkModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        list: data
+    }
+}
+
+// 搜索点赞文章列表
+const searchPraiseBlog = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+
+    let length = await PraiseModel.find().count()
+    let data = await PraiseModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        list: data
+    }
+}
+
+
+// 搜索点赞评论列表
+const searchPraiseRemark = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+
+    let length = await PremarkModel.find().count()
+    let data = await PremarkModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
     return {
         length: length,
         list: data

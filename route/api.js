@@ -103,6 +103,8 @@ const loginC = userAPI.LOGINC_INFO_API
 const logoutC = userAPI.LOGOUTC_INFO_API
 const getUserInfoC = userAPI.GET_CUSER_INFO_API
 const premark = articleAPI.PRAISE_REMARK_INFO_API
+const searchPraiseBlog = articleAPI.SEARCH_PRAISE_BLOG_INFO_API
+const searchPraiseRemark = articleAPI.SEARCH_PRAISE_REMARK_INFO_API
     /**
      *  爬虫（来自segmentDefault）
      */
@@ -143,6 +145,8 @@ router.get('/searchAllMarkers', checkToken, searchAllMarkers)
 router.post('/addAttentionUser', checkToken, addAttentionUser)
 router.get('/searchReplyers', checkToken, searchReplyers)
 router.get('/userInfo', checkToken, userInfo)
+router.get('/searchPraiseBlog', checkToken, searchPraiseBlog)
+router.get('/searchPraiseRemark', checkToken, searchPraiseRemark)
 
 router.post('/upload', upload.single('avatar'), uploadImage)
 
