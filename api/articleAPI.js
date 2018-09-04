@@ -34,6 +34,29 @@ var resObj = (code, msg, data) => {
  *  文章信息
  */
 
+// 收藏文章列表
+exports.SEARCH_COLLECT_BLOG_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    try {
+        let data = await searchCollectBlog(getParams)
+        let result = {}
+        let collectBlogList = []
+        data.list.forEach((item, i) => {
+            let obj = {}
+            obj.collectId = item._id
+            obj.name = item.userName
+            obj.blogId = item.blogId
+            obj.collectTime = item.time
+            collectBlogList.push(obj)
+        })
+        result.length = data.length
+        result.list = collectBlogList
+        ctx.body = resObj(1, '查询成功', result)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
+
 // 点赞文章列表
 exports.SEARCH_PRAISE_BLOG_INFO_API = async(ctx, next) => {
     let getParams = ctx.request.query
@@ -147,8 +170,17 @@ exports.DETAIL_BLOG_INFO_API = async(ctx, next) => {
             let remarkData = await RemarkModel.find().exec()
             let remarkList = []
             remarkData.forEach((item, i) => {
+
                 if (item.blogId == getParams.id) {
-                    remarkList.push(item)
+                    let obj = {}
+                    obj._id = item._id
+                    obj.name = item.name
+                    obj.account = item.account
+                    obj.blogId = item.blogId
+                    obj.time = item.time
+                    obj.markContent = item.markContent
+                    obj.praiseRemarkList = item.praiseRemarkList
+                    remarkList.push(obj)
                 }
             })
 
@@ -457,6 +489,25 @@ exports.PRAISE_REMARK_INFO_API = async(ctx, next) => {
             markObj.premarkStatus = 1
             premark = new PremarkModel(markObj)
             let data = await premark.save()
+
+            await RemarkModel.findById(getParams.remarkId).exec().then(temp => {
+                let praiseRemarkList = temp.praiseRemarkList
+                praiseRemarkList.push(markObj)
+                RemarkModel.findByIdAndUpdate(getParams.remarkId, { praiseRemarkList }).exec()
+                    .then((data) => {
+                        ctx.status = 200
+                        if (data) {
+                            ctx.body = resObj(1, '修改成功', data)
+                        } else {
+                            ctx.body = resObj(2, '不存在项')
+                        }
+                    })
+                    .catch((e) => {
+                        ctx.status = 200
+                        ctx.body = resObj(0, '修改出错', e.toString())
+                    })
+            })
+
             ctx.body = resObj(1, '点赞成功', data)
         } else if (markObj.premarkStatus === 1) {
             await PremarkModel.findByIdAndRemove(markObj.remarkId).exec()
@@ -1417,6 +1468,30 @@ const searchPraiseBlog = async(info) => {
 
     let length = await PraiseModel.find().count()
     let data = await PraiseModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        list: data
+    }
+}
+
+// 搜索收藏文章列表
+const searchCollectBlog = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+
+    let length = await CollectModel.find().count()
+    let data = await CollectModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
     return {
         length: length,
         list: data

@@ -105,10 +105,12 @@ const getUserInfoC = userAPI.GET_CUSER_INFO_API
 const premark = articleAPI.PRAISE_REMARK_INFO_API
 const searchPraiseBlog = articleAPI.SEARCH_PRAISE_BLOG_INFO_API
 const searchPraiseRemark = articleAPI.SEARCH_PRAISE_REMARK_INFO_API
-    /**
-     *  爬虫（来自segmentDefault）
-     */
-    // 前端
+const searchCollectBlog = articleAPI.SEARCH_COLLECT_BLOG_INFO_API
+
+/**
+ *  爬虫（来自segmentDefault）
+ */
+// 前端
 const frontEndBlog = frontEndAPI.FRONTEND_INFO_API
 
 // 后端
@@ -147,6 +149,7 @@ router.get('/searchReplyers', checkToken, searchReplyers)
 router.get('/userInfo', checkToken, userInfo)
 router.get('/searchPraiseBlog', checkToken, searchPraiseBlog)
 router.get('/searchPraiseRemark', checkToken, searchPraiseRemark)
+router.get('/searchCollectBlog', checkToken, searchCollectBlog)
 
 router.post('/upload', upload.single('avatar'), uploadImage)
 
