@@ -6,13 +6,13 @@ const UserModel = db.userAPI
 const CUserModel = db.cUserAPI
 const LogModel = db.logAPI
 const concernedUser = db.concernedAPI
-
-/**
- * 返回值
- * @param code 返回码
- * @param msg	返回信息
- * @return
- */
+const lodash = require('lodash')
+    /**
+     * 返回值
+     * @param code 返回码
+     * @param msg	返回信息
+     * @return
+     */
 
 var resObj = (code, msg, token, resData) => {
     return {
@@ -33,6 +33,100 @@ var logObj = (user, ip, msg) => {
     /**
      *  用户信息  
      */
+
+// 搜索客户端账户
+const searchAccountClient = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+
+    let length = await CUserModel.find().count()
+    let data = await CUserModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        list: data
+    }
+}
+
+// 搜索后端账户
+const searchAccountAdmin = async(info) => {
+    let count = parseInt(info.pageNum ? info.pageNum : 0)
+        // 分页
+    let skipNum
+    if (info.pageNum && info.page) {
+        skipNum = (info.page - 1) * info.pageNum
+    }
+    // 排序
+    let sortWay
+    if (info.time) {
+        sortWay = { time: info.time }
+    } else {
+        sortWay = { time: -1 }
+    }
+
+    let length = await UserModel.find().count()
+    let data = await UserModel.find().limit(count).skip(skipNum).sort(sortWay).exec()
+    return {
+        length: length,
+        list: data
+    }
+}
+
+// 客户端账户列表
+exports.SEARCH_ACCOUNT_CLIENT_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    try {
+        let data = await searchAccountClient(getParams)
+        let result = {}
+        let accountClientList = []
+        data.list.forEach((item, i) => {
+            let obj = {}
+            obj.name = item.name
+            obj.account = item.account
+            obj.joinTime = item.joinTime
+            obj.loginTime = item.loginTime
+            obj.userStatus = item.status
+            accountClientList.push(obj)
+        })
+        result.length = data.length
+        result.list = accountClientList
+        ctx.body = resObj(1, '查询成功', null, result)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
+
+// 后台账户列表
+exports.SEARCH_ACCOUNT_ADMIN_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    try {
+        let data = await searchAccountAdmin(getParams)
+        let result = {}
+        let accountAdminList = []
+        data.list.forEach((item, i) => {
+            let obj = {}
+            obj.account = item.user
+            obj.avatar = item.avatar
+            obj.joinTime = item.joinTime
+            accountAdminList.push(obj)
+        })
+        result.length = data.length
+        result.list = accountAdminList
+        ctx.body = resObj(1, '查询成功', null, result)
+    } catch (e) {
+        ctx.body = resObj(0, '查询出错', e.toString())
+    }
+}
 
 // C端注册
 exports.REGISTC_INFO_API = async(ctx, next) => {
@@ -86,6 +180,7 @@ exports.LOGINC_INFO_API = async(ctx, next) => {
     userObj.account = Info.account
     let userIp = ctx.request.ip.match(/\d+.\d+.\d+.\d+/)[0]
     let logInfo = logObj(Info.account, userIp, "登录系统")
+    let now = new Date()
     try {
         await CUserModel.find(userObj).exec()
             .then((data) => {
@@ -94,6 +189,7 @@ exports.LOGINC_INFO_API = async(ctx, next) => {
                         // 日志服务
                         let logRegister = new LogModel(logInfo)
                         logRegister.save()
+                        CUserModel.findOneAndUpdate(userObj, { loginTime: now }).exec()
                         const token = jwt.sign({
                             user_id: data[0]._id,
                         }, secret, {

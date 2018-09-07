@@ -77,8 +77,9 @@ let cUser = {
     password: String,
     name: String,
     token: String,
-    status: { type: Number, default: 0 },
-    joinTime: { type: Date, default: Date.now }
+    status: { type: Number, default: 0 }, //C端登录状态，1为登进，0为登出
+    joinTime: { type: Date, default: Date.now },
+    loginTime: { type: Date, default: null }
 };
 // 登录日志
 let loginLogs = {

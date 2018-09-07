@@ -106,6 +106,8 @@ const premark = articleAPI.PRAISE_REMARK_INFO_API
 const searchPraiseBlog = articleAPI.SEARCH_PRAISE_BLOG_INFO_API
 const searchPraiseRemark = articleAPI.SEARCH_PRAISE_REMARK_INFO_API
 const searchCollectBlog = articleAPI.SEARCH_COLLECT_BLOG_INFO_API
+const searchAccountAdmin = userAPI.SEARCH_ACCOUNT_ADMIN_INFO_API
+const searchAccountClient = userAPI.SEARCH_ACCOUNT_CLIENT_INFO_API
 
 /**
  *  爬虫（来自segmentDefault）
@@ -160,6 +162,8 @@ router.get('/chartData', checkToken, chartData)
 
 router.get('/printConcernedUser', checkToken, printConcernedUser)
 router.get('/deleteConcernedUser', checkToken, deleteConcernedUser)
+router.get('/searchAccountAdmin', checkToken, searchAccountAdmin)
+router.get('/searchAccountClient', checkToken, searchAccountClient)
     /**
      *  LOGS
      */
