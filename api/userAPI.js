@@ -106,6 +106,72 @@ exports.SEARCH_ACCOUNT_CLIENT_INFO_API = async(ctx, next) => {
     }
 }
 
+// 冻结admin账户
+exports.FREEZE_USER_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    if (!getParams.userId) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '参数不全')
+        return
+    }
+    try {
+        await UserModel.findByIdAndUpdate(getParams.userId, { freeze: 1 }).exec()
+            .then((data) => {
+                ctx.body = resObj(1, '账户冻结成功')
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e)
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
+// 删除账户
+exports.DELETE_USER_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    if (!getParams.userId) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '参数不全')
+        return
+    }
+    try {
+        await UserModel.findByIdAndRemove(getParams.userId).exec()
+            .then((data) => {
+                ctx.body = resObj(1, '账户删除成功')
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e)
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
+// 释放admin账户
+exports.RELEASE_USER_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    if (!getParams.userId) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '参数不全')
+        return
+    }
+    try {
+        await UserModel.findByIdAndUpdate(getParams.userId, { freeze: 0 }).exec()
+            .then((data) => {
+                ctx.body = resObj(1, '账户释放成功')
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e)
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
 // 后台账户列表
 exports.SEARCH_ACCOUNT_ADMIN_INFO_API = async(ctx, next) => {
     let getParams = ctx.request.query
@@ -115,9 +181,12 @@ exports.SEARCH_ACCOUNT_ADMIN_INFO_API = async(ctx, next) => {
         let accountAdminList = []
         data.list.forEach((item, i) => {
             let obj = {}
+            obj.userId = item._id
             obj.account = item.user
             obj.avatar = item.avatar
             obj.joinTime = item.joinTime
+            obj.freeze = item.freeze
+            obj.token = item.token
             accountAdminList.push(obj)
         })
         result.length = data.length
@@ -486,8 +555,38 @@ exports.EDIT_REMARK_API = async(ctx, next) => {
 
 // 用户信息（用户名，头像）
 exports.GET_USER_INFO_API = async(ctx, next) => {
+    console.log(111111111111, ctx.header.authorization)
     try {
         await UserModel.find({ token: ctx.header.authorization }).sort({ joinTime: -1 }).exec()
+            .then((data) => {
+                console.log(data)
+                let resData = {
+                    user: data[0].user,
+                    avatar: data[0].avatar,
+                    freeze: data[0].freeze
+                }
+                ctx.body = resObj(1, 'success', '', resData)
+            })
+            .catch((e) => {
+                console.log(e)
+                ctx.body = resObj(0, '发生错误', e)
+            })
+    } catch (e) {
+        ctx.body = resObj(0, '数据库错误', e.toString())
+    }
+}
+
+// 获取用户信息
+exports.SEARCH_USER_INFO_API = async(ctx, next) => {
+    let getParams = ctx.request.query
+    console.log(1111111111, getParams)
+    if (!getParams.userId) {
+        ctx.status = 200
+        ctx.body = resObj(-1, '参数不全')
+        return
+    }
+    try {
+        await UserModel.find({ _id: getParams.userId }).sort({ joinTime: -1 }).exec()
             .then((data) => {
                 console.log(data)
                 let resData = {
@@ -504,6 +603,7 @@ exports.GET_USER_INFO_API = async(ctx, next) => {
         ctx.body = resObj(0, '数据库错误', e.toString())
     }
 }
+
 const printUser = async(info) => {
     let count = parseInt(info.pageNum ? info.pageNum : 0)
         // 分页

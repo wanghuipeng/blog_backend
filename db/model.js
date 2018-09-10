@@ -68,7 +68,8 @@ let adminUser = {
     password: String,
     avatar: String,
     token: String,
-    remark: { type: String, default: '暂无' },
+    freeze: { type: Number, default: 0 },
+    token: String,
     joinTime: { type: Date, default: Date.now }
 };
 // C端用户项
