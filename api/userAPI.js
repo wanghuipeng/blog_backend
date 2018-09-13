@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken')
 const secret = 'mynameisWanghuipeng'; // 指定密钥，这是之后用来判断 token 合法性的标志
 
 const db = require('../db/model.js')
+const ArticleModel = db.articleAPI
+const RemarkModel = db.remarkAPI
 const UserModel = db.userAPI
 const CUserModel = db.cUserAPI
 const LogModel = db.logAPI
@@ -555,22 +557,33 @@ exports.EDIT_REMARK_API = async(ctx, next) => {
 
 // 用户信息（用户名，头像）
 exports.GET_USER_INFO_API = async(ctx, next) => {
-    console.log(111111111111, ctx.header.authorization)
     try {
-        await UserModel.find({ token: ctx.header.authorization }).sort({ joinTime: -1 }).exec()
-            .then((data) => {
-                console.log(data)
-                let resData = {
-                    user: data[0].user,
-                    avatar: data[0].avatar,
-                    freeze: data[0].freeze
+        let userData = await UserModel.find({ token: ctx.header.authorization }).sort({ joinTime: -1 }).exec()
+
+        let articleData = await ArticleModel.find({ author: userData[0].user }).exec()
+        let blogIdArr = []
+        articleData.map(item => {
+            blogIdArr.push(item._id)
+        })
+
+        let remarkData = await RemarkModel.find().exec()
+        let remarkArr = []
+        remarkData.forEach(item => {
+            blogIdArr.forEach(item1 => {
+                if (item.blogId == item1) {
+                    remarkArr.push(item1)
                 }
-                ctx.body = resObj(1, 'success', '', resData)
             })
-            .catch((e) => {
-                console.log(e)
-                ctx.body = resObj(0, '发生错误', e)
-            })
+        })
+        let notice = remarkArr.length
+
+        let resData = {
+            user: userData[0].user,
+            avatar: userData[0].avatar,
+            freeze: userData[0].freeze,
+            notice: notice
+        }
+        ctx.body = resObj(1, 'success', '', resData)
     } catch (e) {
         ctx.body = resObj(0, '数据库错误', e.toString())
     }

@@ -13,13 +13,30 @@ const koaSslify = require('koa-sslify');
 const opener = require('opener');
 
 const app = new Koa();
-
 const index = require('./route/index.js');
 const other = require('./route/other.js');
 const api = require('./route/api.js');
 
 const cors = require('koa2-cors');
-// 具体参数我们在后面进行解释
+
+const server = require("http").createServer(app.callback()).listen(3000, "127.0.0.1");
+const io = require("socket.io")(server);
+
+
+var onlineCount = 0;
+//连接事件
+io.sockets.on('connection', socket => {
+        socket.on("sendPrivateMsg", async data => {
+            console.log(11111111, data)
+
+            setInterval(function() {
+                onlineCount++;
+                socket.volatile.emit('onlinenums', { nums: onlineCount });
+            }, 10000)
+        })
+
+    })
+    // 具体参数我们在后面进行解释
 app.use(cors({
     // origin: function(ctx) {
     //     if (ctx.url === '/test') {

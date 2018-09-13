@@ -69,6 +69,7 @@ let adminUser = {
     avatar: String,
     token: String,
     freeze: { type: Number, default: 0 },
+    notice: Number,
     token: String,
     joinTime: { type: Date, default: Date.now }
 };
