@@ -24,19 +24,42 @@ const io = require("socket.io")(server);
 
 
 var onlineCount = 0;
-//连接事件
-io.sockets.on('connection', socket => {
-        socket.on("sendPrivateMsg", async data => {
-            console.log(11111111, data)
+const db = require('./db/model.js')
+const ArticleModel = db.articleAPI
+const RemarkModel = db.remarkAPI
+const UserModel = db.userAPI
 
-            setInterval(function() {
-                onlineCount++;
-                socket.volatile.emit('onlinenums', { nums: onlineCount });
-            }, 10000)
-        })
+io.sockets.on('connection', socket => {
+    socket.on("sendPrivateMsg", async data => {
+        console.log(11111111, data)
+            //没一秒轮询数据库，查询被赞的博客的数量
+        setInterval(async() => {
+            let userData = await UserModel.find({ token: data }).sort({ joinTime: -1 }).exec()
+            console.log(22222, userData)
+            let articleData = await ArticleModel.find({ author: userData[0].user }).exec()
+            let blogIdArr = []
+            articleData.map(item => {
+                blogIdArr.push(item._id)
+            })
+
+            let remarkData = await RemarkModel.find().exec()
+            let remarkArr = []
+            remarkData.forEach(item => {
+                blogIdArr.forEach(item1 => {
+                    if (item.blogId == item1) {
+                        remarkArr.push(item1)
+                    }
+                })
+            })
+            onlineCount = remarkArr.length
+            socket.volatile.emit('onlinenums', { nums: onlineCount })
+        }, 1000)
 
     })
-    // 具体参数我们在后面进行解释
+})
+
+
+// 具体参数我们在后面进行解释
 app.use(cors({
     // origin: function(ctx) {
     //     if (ctx.url === '/test') {
