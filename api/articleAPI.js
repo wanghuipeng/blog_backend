@@ -565,6 +565,7 @@ exports.PRAISE_BLOG_INFO_API = async(ctx, next) => {
 
 // 收藏文章
 exports.COLLECT_BLOG_INFO_API = async(ctx, next) => {
+    console.log('----------------------')
     let getParams = ctx.request.body
     let markObj = {}
     markObj.blogId = getParams.blogId
